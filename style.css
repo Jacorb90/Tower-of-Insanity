@@ -1,0 +1,44 @@
+html, body {
+	height: 100%;
+}
+
+.longbtn {
+	width: 33.3%;
+}
+
+.longbtn2 {
+	width: 66.7%;
+}
+
+.locked {
+	background-color: red;
+	border-color: red;
+}
+
+.bought {
+	background-color: green;
+	border-color: green;
+}
+
+@font-face {
+	font-family: Typewriter;
+	src: url('MonospaceTypewriter.ttf');
+}
+
+* {
+	font-family: 'Typewriter';
+}
+
+#gold {
+	font-color: yellow;
+}
+
+#enemyhp {
+	font-color: red;
+}
+
+.column {
+	width: 200px;
+	float: left;
+	height: 90%;
+}

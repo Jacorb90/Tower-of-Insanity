@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<head>
+	<link rel="stylesheet" href="style.css">
+	<script type="text/javascript" src="js/ExpantaNum.js"></script>
+	<script type="text/javascript" src="js/constants.js"></script>
+	<script type="text/javascript" src="js/format.js"></script>
+	<script type="text/javascript" src="js/game.js"></script>
+	<title>RPG Incremental</title>
+</head>
+<body onload="load()" style="background-color:grey; color:white; margin: auto; text-align: center;">
+	<button onclick="save()">Save Game</button><br>
+	<div id="tablist" class="column">
+		<br>
+		<button onclick="showTab('main')">Tower</button><br>
+		<button id="nurserytabbtn" onclick="showTab('nursery')">Nursery</button>
+	</div>
+	<div id="main" class="tab">
+		You are in Room <span id="room"></span> of Floor <span id="floor"></span>.<br><br>
+		Enemy HP: <span id="enemyhp"></span>.<br>
+		Gold: <span id="gold"></span>.<br><br>
+		<button id="nextRoom" class="longbtn" onclick="action()">Next Room</button><br>
+		<button id="nextFloor" class="longbtn" onclick="nextFloor()">Next Floor</button><br>
+		<button id="prevFloor" class="longbtn" onclick="prevFloor()">Previous Floor</button><br><br><br>
+		<button id="upg1" class="longbtn locked" onclick="buyUpg(1)">Multiply your damage by <span id="upg1eff">3</span>.<br>Cost: <span id="upg1cost"></span> Gold.</button>
+		<button id="upg2" class="longbtn locked" onclick="buyUpg(2)">Multiply Gold gain by <span id="upg2eff">2</span>.<br>Cost: <span id="upg2cost"></span> Gold.</button><br>
+		<div id="floor1upgs">
+			<button id="upg3" class="longbtn locked" onclick="buyUpg(3)">Same as above, but persists through floors.<br>Cost: <span id="upg3cost"></span> Gold.</button>
+			<button id="upg4" class="longbtn locked" onclick="buyUpg(4)">Same as above, but persists through floors.<br>Cost: <span id="upg4cost"></span> Gold.</button><br>
+			<button id="upg5" class="longbtn locked" onclick="buyUpg(5)">Divide all previous upgrade costs by <span id="upg5eff">10</span>.<br>Cost: <span id="upg5cost"></span> Gold.</button>
+		</div>
+		<div id="floor2upgs">
+			<button id="upg6" class="longbtn locked" onclick="buyUpg(6)">Same as above, but persists through floors.<br>Cost: <span id="upg6cost"></span> Gold.</button><br>
+			<button id="upg7" class="longbtn locked" onclick="buyUpg(7)">Autoclick the Attack button <span id="upg7eff">5</span> times per second.<br>Cost: <span id="upg7cost"></span> Gold.</button>
+			<button id="upg8" class="longbtn locked" onclick="buyUpg(8)">Divide Enemy HP by <span id="upg8eff">10</span>.<br>Cost: <span id="upg8cost"></span> Gold.</button>
+		</div>
+		<div id="floor3upgs">
+			<button id="upg9" class="longbtn locked" onclick="buyUpg(9)">Same as above, but persists through floors.<br>Cost: <span id="upg9cost"></span> Gold.</button>
+			<button id="upg10" class="longbtn locked" onclick="buyUpg(10)">Same as above, but persists through floors.<br>Cost: <span id="upg10cost"></span> Gold.</button>
+		</div>
+		<div id="floor4upgs">
+			<button id="upg11" class="longbtn locked" onclick="buyUpg(11)">All above upgrades are slightly stronger.<br>Cost: <span id="upg11cost"></span> Gold.</button>
+		</div>
+		<div id="floor5upgs">
+			<button id="upg12" class="longbtn locked" onclick="buyUpg(12)">Same as above, but persists through floors.<br>Cost: <span id="upg12cost"></span> Gold.</button>
+		</div>
+	</div>
+	<div id="nursery" class="tab">
+		<div class="column">
+			There are <span id="adults"></span> adults, which multiply your damage by <span id="adultDmg"></span>.<br><br>
+			<button id="hireAdult" class="longbtn2 locked" onclick="hireAdult()">+1 Adult<br>Cost: <span id="hireAdultCost"></span> Gold.</button><br><br>
+			<button id="nursery1" class="longbtn2 locked" onclick="buyNurseryUpg(1)">Adults create babies 10x faster.<br>Cost: <span id="nursery1cost"></span> Adults.</button>
+		</div>
+		<div class="column">
+			There are <span id="babies"></span> babies, which grow into children in <span id="babyGrowthRate"></span> each.<br><br>
+			<button id="boostBaby" class="longbtn2 locked" onclick="boostBaby()">Double baby growth rate<br>Cost: <span id="boostBabyCost"></span> Adults.</button><br><br>
+			<button id="nursery2" class="longbtn2 locked" onclick="buyNurseryUpg(2)">The Adult effect exponent is increased by 0.2.<br>Cost: <span id="nursery2cost"></span> Adults.</button>
+		</div>
+		<div class="column">
+			There are <span id="children"></span> children, which grow into teenagers in <span id="childGrowthRate"></span> each.<br><br>
+			<button id="boostChild" class="longbtn2 locked" onclick="boostChild()">Double child growth rate<br>Cost: <span id="boostChildCost"></span> Adults.</button><br><br>
+			<button id="nursery3" class="longbtn2 locked" onclick="buyNurseryUpg(3)">Children grow up 10% faster for every Floor you've reached.<br>Cost: <span id="nursery3cost"></span> Adults.</button>
+		</div>
+		<div class="column">
+			There are <span id="teens"></span> teenagers, which grow into adults in <span id="teenGrowthRate"></span> each.<br><br>
+			<button id="boostTeen" class="longbtn2 locked" onclick="boostTeen()">Double teenager growth rate<br>Cost: <span id="boostTeenCost"></span> Adults.</button><br><br>
+			<button id="nursery4" class="longbtn2 locked" onclick="buyNurseryUpg(4)">All above upgrades cost 25x less.<br>Cost: <span id="nursery4cost"></span> Adults.</button>
+		</div>
+	</div>
+</body>
