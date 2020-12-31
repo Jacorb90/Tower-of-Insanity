@@ -5,7 +5,7 @@
 	<script type="text/javascript" src="js/constants.js"></script>
 	<script type="text/javascript" src="js/format.js"></script>
 	<script type="text/javascript" src="js/game.js"></script>
-	<title>RPG Incremental</title>
+	<title>Tower of Insanity</title>
 </head>
 <body onload="load()" style="background-color:grey; color:white; margin: auto; text-align: center;">
 	<button onclick="save()">Save Game</button><br>
@@ -43,27 +43,36 @@
 		<div id="floor5upgs">
 			<button id="upg12" class="longbtn locked" onclick="buyUpg(12)">Same as above, but persists through floors.<br>Cost: <span id="upg12cost"></span> Gold.</button>
 		</div>
+		<div id="floor6upgs">
+			<button id="upg13" class="longbtn locked" onclick="buyUpg(13)">Auto-max all above upgrades 2 times per second (persists through floors).<br>Cost: <span id="upg13cost"></span> Gold.</button>
+			<button id="upg14" class="longbtn locked" onclick="buyUpg(14)">Add 0.1 to the Adult effect exponent.<br>Cost: <span id="upg14cost"></span> Gold.</button><br>
+		</div>
 	</div>
 	<div id="nursery" class="tab">
 		<div class="column">
-			There are <span id="adults"></span> adults, which multiply your damage by <span id="adultDmg"></span>.<br><br>
+			There are <span id="adults"></span> adults, which multiply your damage<span id="nursery6desc"></span> by <span id="adultDmg"></span>.<br><br>
 			<button id="hireAdult" class="longbtn2 locked" onclick="hireAdult()">+1 Adult<br>Cost: <span id="hireAdultCost"></span> Gold.</button><br><br>
-			<button id="nursery1" class="longbtn2 locked" onclick="buyNurseryUpg(1)">Adults create babies 10x faster.<br>Cost: <span id="nursery1cost"></span> Adults.</button>
+			<button id="nursery1" class="longbtn2 locked" onclick="buyNurseryUpg(1)">Adults create babies 10x faster.<br>Cost: <span id="nursery1cost"></span> Adults.</button><br><br>
+			<button id="nursery5" class="longbtn2 locked" onclick="buyNurseryUpg(5)">Adults create babies 2% faster for every Room you've reached.<br>Cost: <span id="nursery5cost"></span> Adults.</button><br><br>
+			<button id="nursery9" class="longbtn2 locked" onclick="buyNurseryUpg(9)">Adults create babies 150% faster for every Floor you've reached.<br>Cost: <span id="nursery9cost"></span> Adults.</button>
 		</div>
 		<div class="column">
 			There are <span id="babies"></span> babies, which grow into children in <span id="babyGrowthRate"></span> each.<br><br>
-			<button id="boostBaby" class="longbtn2 locked" onclick="boostBaby()">Double baby growth rate<br>Cost: <span id="boostBabyCost"></span> Adults.</button><br><br>
-			<button id="nursery2" class="longbtn2 locked" onclick="buyNurseryUpg(2)">The Adult effect exponent is increased by 0.2.<br>Cost: <span id="nursery2cost"></span> Adults.</button>
+			<button id="boostBaby" class="longbtn2 locked" onclick="boostBaby()">Multiply baby growth rate by <span id="babyGrowthRateInc"></span><br>Cost: <span id="boostBabyCost"></span> Adults.</button><br><br>
+			<button id="nursery2" class="longbtn2 locked" onclick="buyNurseryUpg(2)">The Adult effect exponent is increased by 0.2.<br>Cost: <span id="nursery2cost"></span> Adults.</button><br><br>
+			<button id="nursery6" class="longbtn2 locked" onclick="buyNurseryUpg(6)">The Adult effect also affects Gold gain.<br>Cost: <span id="nursery6cost"></span> Adults.</button>
 		</div>
 		<div class="column">
 			There are <span id="children"></span> children, which grow into teenagers in <span id="childGrowthRate"></span> each.<br><br>
-			<button id="boostChild" class="longbtn2 locked" onclick="boostChild()">Double child growth rate<br>Cost: <span id="boostChildCost"></span> Adults.</button><br><br>
-			<button id="nursery3" class="longbtn2 locked" onclick="buyNurseryUpg(3)">Children grow up 10% faster for every Floor you've reached.<br>Cost: <span id="nursery3cost"></span> Adults.</button>
+			<button id="boostChild" class="longbtn2 locked" onclick="boostChild()">Multiply child growth rate by <span id="childGrowthRateInc"></span><br>Cost: <span id="boostChildCost"></span> Adults.</button><br><br>
+			<button id="nursery3" class="longbtn2 locked" onclick="buyNurseryUpg(3)">Children grow up 10% faster for every Floor you've reached.<br>Cost: <span id="nursery3cost"></span> Adults.</button><br><br>
+			<button id="nursery7" class="longbtn2 locked" onclick="buyNurseryUpg(7)">Babies grow up 50% faster for every Adult you've bought.<br>Cost: <span id="nursery7cost"></span> Adults.</button>
 		</div>
 		<div class="column">
 			There are <span id="teens"></span> teenagers, which grow into adults in <span id="teenGrowthRate"></span> each.<br><br>
-			<button id="boostTeen" class="longbtn2 locked" onclick="boostTeen()">Double teenager growth rate<br>Cost: <span id="boostTeenCost"></span> Adults.</button><br><br>
-			<button id="nursery4" class="longbtn2 locked" onclick="buyNurseryUpg(4)">All above upgrades cost 25x less.<br>Cost: <span id="nursery4cost"></span> Adults.</button>
+			<button id="boostTeen" class="longbtn2 locked" onclick="boostTeen()">Multiply teenager growth rate by <span id="teenGrowthRateInc"></span><br>Cost: <span id="boostTeenCost"></span> Adults.</button><br><br>
+			<button id="nursery4" class="longbtn2 locked" onclick="buyNurseryUpg(4)">All above upgrades cost 25x less.<br>Cost: <span id="nursery4cost"></span> Adults.</button><br><br>
+			<button id="nursery8" class="longbtn2 locked" onclick="buyNurseryUpg(8)">All "Multiply growth rate" upgrades are more effective based on their amount, which all now impact baby creation at a reduced rate.<br>Cost: <span id="nursery8cost"></span> Adults.</button>
 		</div>
 	</div>
 </body>

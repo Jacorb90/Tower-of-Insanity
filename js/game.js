@@ -37,12 +37,14 @@ function getGoldGain() {
 	p = p.div(getHPAdj())
 	let gain = p.sqrt().div(2)
 	gain = gain.times(ExpantaNum.pow(ExpantaNum.add(2, getUpgs(11).plus(getUpgs(12))), getUpgs(2).add(getUpgs(4))))
+	if (hasNurseryUpg(6)) gain = gain.times(getAdultEff())
 	return gain.floor()
 }
 
 function action(bulk=new ExpantaNum(1)) {
+	let dmg = getDmg().times(bulk);
 	if (!canContinue()) {
-		player.enemyhp = player.enemyhp.sub(getDmg().times(bulk)).max(0)
+		player.enemyhp = player.enemyhp.sub(dmg).max(0)
 		if (player.enemyhp.lte(0)) {
 			player.enemies = new ExpantaNum(0)
 			player.gold = player.gold.add(getGoldGain())
@@ -65,12 +67,31 @@ function getUpgCost(x) {
 	return cost.ceil()
 }
 
+function getUpgTarg(x) {
+	let gold = player.gold;
+	if (x<5) gold = gold.times(ExpantaNum.pow(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2)), getUpgs(5).add(getUpgs(6))));
+	let targ = gold.div(UPGS.costs[x]).max(1).logBase(UPGS.incs[x]).plus(1).logBase(UPGS.incs[x]).plus(1).floor()
+	return targ;
+}
+
 function buyUpg(x) {
 	if (player.gold.lt(getUpgCost(x))) return
 	player.gold = player.gold.sub(getUpgCost(x))
 	if (player.upgrades[x]) player.upgrades[x] = player.upgrades[x].add(1)
 	else player.upgrades[x] = new ExpantaNum(1)
-	if (x==8) player.enemyhp = player.enemyhp.div(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2))).ceil()
+	if (x==8 || x==10) player.enemyhp = player.enemyhp.div(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2))).ceil()
+}
+
+function autobuyUpgs(start, end) {
+	for (let x=start;x<=end;x++) {
+		if (player.gold.lt(getUpgCost(x))) continue;
+		let target = getUpgTarg(x);
+		let orig = player.upgrades[x]||new ExpantaNum(0);
+		if (target.sub(orig).lt(1)) continue;
+		if (player.upgrades[x]) player.upgrades[x] = player.upgrades[x].max(target);
+		else player.upgrades[x] = target;
+		if (x==8 || x==10) player.enemyhp = player.enemyhp.div(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2)).pow(target.sub(orig))).ceil()
+	}
 }
 
 function getAscendReq() {
@@ -107,12 +128,15 @@ function ascendReset() {
 	if (player.upgrades[7]) player.upgrades[7] = new ExpantaNum(0)
 	if (player.upgrades[8]) player.upgrades[8] = new ExpantaNum(0)
 	if (player.upgrades[11]) player.upgrades[11] = new ExpantaNum(0)
+	if (player.upgrades[14]) player.upgrades[14] = new ExpantaNum(0)
 }
 
 var upg7diff = new ExpantaNum(0)
+var upg13diff = new ExpantaNum(0);
 
 function gameLoop(diff) {
 	player.totalFloor = player.totalFloor.max(player.floor)
+	player.totalRoom = player.totalRoom.max(player.room)
 	document.getElementById("room").textContent = gfe(player.room)
 	document.getElementById("floor").textContent = gfe(player.floor)
 	document.getElementById("enemyhp").textContent = f(player.enemyhp)+"/"+f(getTotalEnemyHP())
@@ -135,9 +159,17 @@ function gameLoop(diff) {
 			action(bulk)
 		}
 	}
+	if (new ExpantaNum(getUpgs(13)).gt(0)) {
+		upg13diff = upg13diff.add(diff);
+		if (upg13diff.gte(ExpantaNum.div(1.5, getUpgs(13)))) {
+			upg13diff = new ExpantaNum(0);
+			autobuyUpgs(1, 12);
+		}
+	}
 	document.getElementById("floor3upgs").style.display = player.totalFloor.gte(3) ? "" : "none"
 	document.getElementById("floor4upgs").style.display = player.totalFloor.gte(4) ? "" : "none"
 	document.getElementById("floor5upgs").style.display = player.totalFloor.gte(5) ? "" : "none"
+	document.getElementById("floor6upgs").style.display = player.totalFloor.gte(6) ? "" : "none"
 	document.getElementById("upg1eff").textContent = f(new ExpantaNum(3).add(getUpgs(11).plus(getUpgs(12))))
 	document.getElementById("upg2eff").textContent = f(new ExpantaNum(2).add(getUpgs(11).plus(getUpgs(12))))
 	document.getElementById("upg5eff").textContent = f(new ExpantaNum(10).add(getUpgs(11).plus(getUpgs(12)).times(2)))
@@ -148,8 +180,17 @@ function gameLoop(diff) {
 		tab = tabs[i]
 		tab.style.display = player.tab==tab.id?"":"none"
 	}
-	document.getElementById("tablist").style.display = player.totalFloor.gte(4) ? "" : "none"
-	document.getElementById("nurserytabbtn").style.display = player.totalFloor.gte(4) ? "" : "none"
+	for (i=0;i<Object.keys(TABS).length;i++) {
+		let name = Object.keys(TABS)[i];
+		let data = TABS[name];
+		let el = document.getElementById(name+"tabbtn")
+		el.style.display = data.display()?"":"none"
+		
+		let unl = data.unl();
+		el.className = unl?"":"locked"
+		if (unl && el.hasAttribute("tooltip")) el.removeAttribute("tooltip")
+		if (!unl) el.setAttribute('tooltip', data.text);
+	}
 	if (player.nursery.teens.gt(0) && player.totalFloor.gte(4)) {
 		if (getGrowthRate("teen").lt(31)) {
 			player.nursery.growthTime3 = player.nursery.growthTime3.add(diff)
@@ -211,10 +252,13 @@ function gameLoop(diff) {
 	document.getElementById("adultDmg").textContent = f(getAdultEff())
 	document.getElementById("babies").textContent = f(player.nursery.babies)
 	document.getElementById("babyGrowthRate").textContent = displayTime(getEachGrowth("baby").pow(-1))
+	document.getElementById("babyGrowthRateInc").textContent = f(getGrowthInc("baby"))
 	document.getElementById("children").textContent = f(player.nursery.children)
 	document.getElementById("childGrowthRate").textContent = displayTime(getEachGrowth("child").pow(-1))
+	document.getElementById("childGrowthRateInc").textContent = f(getGrowthInc("child"))
 	document.getElementById("teens").textContent = f(player.nursery.teens)
 	document.getElementById("teenGrowthRate").textContent = displayTime(getEachGrowth("teen").pow(-1))
+	document.getElementById("teenGrowthRateInc").textContent = f(getGrowthInc("teen"))
 	document.getElementById("hireAdult").className = "longbtn2"+(player.gold.gte(getAdultCost()) ? "" : " locked")
 	document.getElementById("boostBaby").className = "longbtn2"+(player.nursery.adults.gte(getBabyCost()) ? "" : " locked")
 	document.getElementById("boostChild").className = "longbtn2"+(player.nursery.adults.gte(getChildCost()) ? "" : " locked")
@@ -224,19 +268,25 @@ function gameLoop(diff) {
 	document.getElementById("boostChildCost").textContent = f(getChildCost())
 	document.getElementById("boostTeenCost").textContent = f(getTeenCost())
 	for (i=1;i<=NURSERY_UPGS.num;i++) {
+		let unl = player.totalFloor.gte(NURSERY_UPGS.unls[i])
 		let cost = NURSERY_UPGS.costs[i]
+		document.getElementById("nursery"+i).style.display = unl?"":"none";
+		if (!unl) continue;
 		document.getElementById("nursery"+i).className = "longbtn2"+(player.nursery.upgrades.includes(i) ? " bought" : (player.nursery.adults.gte(cost) ? "" : " locked"))
 		document.getElementById("nursery"+i+"cost").textContent = f(cost)
 	}
+	document.getElementById("nursery6desc").textContent = hasNurseryUpg(6)?" and Gold gain":""
 }
 
 function showTab(x) {
+	if (TABS[x]) if (!TABS[x].unl()) return;
 	player.tab = x
 }
 
 function getAdultEffExp() {
 	let exp = new ExpantaNum(1.8)
 	if (hasNurseryUpg(2)) exp = exp.add(0.2)
+	if (player.totalFloor.gte(6)) exp = exp.add(ExpantaNum.div(getUpgs(14), 10));
 	return exp
 }
 
@@ -246,11 +296,23 @@ function getAdultEff() {
 	return eff
 }
 
+function getGrowthInc(type) {
+	let inc = new ExpantaNum(2)
+	if (hasNurseryUpg(8)) {
+		if (player.nursery.babyBoosts.gt(0) && type=="baby") inc = inc.plus(player.nursery.babyBoosts)
+		if (player.nursery.childBoosts.gt(0) && type=="child") inc = inc.plus(player.nursery.childBoosts)
+		if (player.nursery.teenBoosts.gt(0) && type=="teen") inc = inc.plus(player.nursery.teenBoosts)
+	}
+	return inc
+}
+
 function getEachGrowth(type) {
 	let growth = new ExpantaNum(0.1)
-	if (player.nursery.babyBoosts.gt(0) && type=="baby") growth = growth.times(ExpantaNum.pow(2, player.nursery.babyBoosts))
-	if (player.nursery.childBoosts.gt(0) && type=="child") growth = growth.times(ExpantaNum.pow(2, player.nursery.childBoosts))
-	if (player.nursery.teenBoosts.gt(0) && type=="teen") growth = growth.times(ExpantaNum.pow(2, player.nursery.teenBoosts))
+	let inc = getGrowthInc(type)
+	if (player.nursery.babyBoosts.gt(0) && type=="baby") growth = growth.times(ExpantaNum.pow(inc, player.nursery.babyBoosts))
+	if (player.nursery.childBoosts.gt(0) && type=="child") growth = growth.times(ExpantaNum.pow(inc, player.nursery.childBoosts))
+	if (player.nursery.teenBoosts.gt(0) && type=="teen") growth = growth.times(ExpantaNum.pow(inc, player.nursery.teenBoosts))
+	if (type=="baby" && hasNurseryUpg(7)) growth = growth.times(ExpantaNum.pow(1.5, player.nursery.boughtAdults));
 	if (type=="child" && hasNurseryUpg(3)) growth = growth.times(ExpantaNum.pow(1.1, player.totalFloor))
 	return growth
 }
@@ -264,6 +326,14 @@ function getGrowthRate(type) {
 function getHatchRate() {
 	let rate = ExpantaNum.mul(1/3, player.nursery.adults.sqrt())
 	if (hasNurseryUpg(1)) rate = rate.times(10)
+	if (hasNurseryUpg(5)) rate = rate.times(ExpantaNum.pow(1.02, player.totalRoom));
+	if (hasNurseryUpg(8)) {
+		let inc = getGrowthInc("baby").root(2.3);
+		if (player.nursery.babyBoosts.gt(0)) rate = rate.times(ExpantaNum.pow(inc, player.nursery.babyBoosts))
+		if (player.nursery.childBoosts.gt(0)) rate = rate.times(ExpantaNum.pow(inc, player.nursery.childBoosts))
+		if (player.nursery.teenBoosts.gt(0)) rate = rate.times(ExpantaNum.pow(inc, player.nursery.teenBoosts))
+	}
+	if (hasNurseryUpg(9)) rate = rate.times(ExpantaNum.pow(2.5, player.totalFloor));
 	return rate
 }
 
@@ -318,13 +388,15 @@ function boostTeen() {
 
 function buyNurseryUpg(x) {
 	if (player.nursery.upgrades.includes(x)) return
+	if (player.totalFloor.lt(NURSERY_UPGS.unls[x])) return;
 	if (player.nursery.adults.lt(NURSERY_UPGS.costs[x])) return
 	player.nursery.adults = player.nursery.adults.sub(NURSERY_UPGS.costs[x])
 	player.nursery.upgrades.push(x)
 }
 
 function hasNurseryUpg(x) {
-	return player.nursery.upgrades.includes(x)
+	if (player.totalFloor.lt(NURSERY_UPGS.unls[x])) return false;
+	return player.nursery.upgrades.includes(x);
 }
 
 function save() {

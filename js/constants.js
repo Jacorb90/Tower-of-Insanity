@@ -4,8 +4,9 @@ const defaultStart = {
 	gold: new ExpantaNum(0),
 	enemyhp: new ExpantaNum(0),
 	enemies: new ExpantaNum(0),
-	upgrades: {1: new ExpantaNum(0), 2: new ExpantaNum(0), 3: new ExpantaNum(0), 4: new ExpantaNum(0), 5: new ExpantaNum(0), 6: new ExpantaNum(0), 7: new ExpantaNum(0), 8: new ExpantaNum(0), 9: new ExpantaNum(0), 10: new ExpantaNum(0), 11: new ExpantaNum(0), 12: new ExpantaNum(0)},
+	upgrades: {1: new ExpantaNum(0), 2: new ExpantaNum(0), 3: new ExpantaNum(0), 4: new ExpantaNum(0), 5: new ExpantaNum(0), 6: new ExpantaNum(0), 7: new ExpantaNum(0), 8: new ExpantaNum(0), 9: new ExpantaNum(0), 10: new ExpantaNum(0), 11: new ExpantaNum(0), 12: new ExpantaNum(0), 13: new ExpantaNum(0), 14: new ExpantaNum(0)},
 	totalFloor: new ExpantaNum(0),
+	totalRoom: new ExpantaNum(0),
 	tab: "main",
 	nursery: {
 		adults: new ExpantaNum(0),
@@ -38,14 +39,23 @@ const TIMES = {
 }
 
 const UPGS = {
-	num: 12,
-	costs: [null, new ExpantaNum(5), new ExpantaNum(50), new ExpantaNum(10), new ExpantaNum(100), new ExpantaNum(250), new ExpantaNum(2.5e3), new ExpantaNum(200), new ExpantaNum(300), new ExpantaNum(2e3), new ExpantaNum(1.5e3), new ExpantaNum(1e8), new ExpantaNum(1e9)],
-	incs: [null, new ExpantaNum(2), new ExpantaNum(5), new ExpantaNum(2), new ExpantaNum(5), new ExpantaNum(2.5), new ExpantaNum(2.5), new ExpantaNum(2), new ExpantaNum(1.5), new ExpantaNum(2), new ExpantaNum(1.5), new ExpantaNum(2.8), new ExpantaNum(2.8)],
+	num: 14,
+	costs: [null, new ExpantaNum(5), new ExpantaNum(50), new ExpantaNum(10), new ExpantaNum(100), new ExpantaNum(250), new ExpantaNum(2.5e3), new ExpantaNum(200), new ExpantaNum(300), new ExpantaNum(2e3), new ExpantaNum(1.5e3), new ExpantaNum(1e8), new ExpantaNum(1e9), new ExpantaNum(1e50), new ExpantaNum(1e60)],
+	incs: [null, new ExpantaNum(2), new ExpantaNum(5), new ExpantaNum(2), new ExpantaNum(5), new ExpantaNum(2.5), new ExpantaNum(2.5), new ExpantaNum(2), new ExpantaNum(1.5), new ExpantaNum(2), new ExpantaNum(1.5), new ExpantaNum(2.8), new ExpantaNum(2.8), new ExpantaNum(7.5), new ExpantaNum(3.93)],
 }
 
 const ASCEND_REQ = new ExpantaNum(35)
 
+const TABS = {
+	nursery: {
+		display() { return true },
+		text: "Reach Floor 4 to unlock The Nursery.",
+		unl() { return player.totalFloor.gte(4) },
+	},
+}
+
 const NURSERY_UPGS = {
-	num: 4,
-	costs: [null, new ExpantaNum(2.5e3), new ExpantaNum(25e3), new ExpantaNum(15e4), new ExpantaNum(2e5)],
+	num: 9,
+	unls: [null, 4, 4, 4, 4, 5, 5, 5, 5, 6],
+	costs: [null, new ExpantaNum(2.5e3), new ExpantaNum(25e3), new ExpantaNum(15e4), new ExpantaNum(2e5), new ExpantaNum(1e6), new ExpantaNum(8e8), new ExpantaNum(1.5e9), new ExpantaNum(2e9), new ExpantaNum(1e30)],
 }

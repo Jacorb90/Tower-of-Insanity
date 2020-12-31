@@ -36,7 +36,10 @@ function f(num) {
 	num = new ExpantaNum(num)
 	if (num.lt(0)) return "-"+f(num.times(-1))
 	if (num.eq(0)) return "0"
-	if (num.lt(0.01)) return "1/("+f(num.pow(-1))+")"
+	if (num.lt(0.001)) {
+		if (num.gt(ExpantaNum.pow(0.1, 1e6))) return Math.pow(10, num.log10().toNumber() % 1 + 1).toFixed(2).replace(/([0-9]+(.[0-9]+[1-9])?)(.?0+$)/, '$1') + 'e-' + num.log10().times(-1).plus(1).floor()
+		return "1/("+f(num.pow(-1))+")"
+	}
 	if (num.lt(1e6)) return ts(num);
 	if (num.lt('ee6')) return Math.pow(10, num.log10().toNumber() % 1).toFixed(2).replace(/([0-9]+(.[0-9]+[1-9])?)(.?0+$)/, '$1') + 'e' + num.log10().floor()
 	return ts(num);
