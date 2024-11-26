@@ -4,7 +4,7 @@ const defaultStart = {
 	gold: new ExpantaNum(0),
 	enemyhp: new ExpantaNum(0),
 	enemies: new ExpantaNum(0),
-	upgrades: {1: new ExpantaNum(0), 2: new ExpantaNum(0), 3: new ExpantaNum(0), 4: new ExpantaNum(0), 5: new ExpantaNum(0), 6: new ExpantaNum(0), 7: new ExpantaNum(0), 8: new ExpantaNum(0), 9: new ExpantaNum(0), 10: new ExpantaNum(0), 11: new ExpantaNum(0), 12: new ExpantaNum(0), 13: new ExpantaNum(0), 14: new ExpantaNum(0)},
+	upgrades: {1: new ExpantaNum(0), 2: new ExpantaNum(0), 3: new ExpantaNum(0), 4: new ExpantaNum(0), 5: new ExpantaNum(0), 6: new ExpantaNum(0), 7: new ExpantaNum(0), 8: new ExpantaNum(0), 9: new ExpantaNum(0), 10: new ExpantaNum(0), 11: new ExpantaNum(0), 12: new ExpantaNum(0), 13: new ExpantaNum(0), 14: new ExpantaNum(0), 15: new ExpantaNum(0), 16: new ExpantaNum(0), 17: new ExpantaNum(0), 18: new ExpantaNum(0), 19: new ExpantaNum(0), 20: new ExpantaNum(0)},
 	totalFloor: new ExpantaNum(0),
 	totalRoom: new ExpantaNum(0),
 	tab: "main",
@@ -39,9 +39,10 @@ const TIMES = {
 }
 
 const UPGS = {
-	num: 14,
-	costs: [null, new ExpantaNum(5), new ExpantaNum(50), new ExpantaNum(10), new ExpantaNum(100), new ExpantaNum(250), new ExpantaNum(2.5e3), new ExpantaNum(200), new ExpantaNum(300), new ExpantaNum(2e3), new ExpantaNum(1.5e3), new ExpantaNum(1e8), new ExpantaNum(1e9), new ExpantaNum(1e50), new ExpantaNum(1e60)],
-	incs: [null, new ExpantaNum(2), new ExpantaNum(5), new ExpantaNum(2), new ExpantaNum(5), new ExpantaNum(2.5), new ExpantaNum(2.5), new ExpantaNum(2), new ExpantaNum(1.5), new ExpantaNum(2), new ExpantaNum(1.5), new ExpantaNum(2.8), new ExpantaNum(2.8), new ExpantaNum(7.5), new ExpantaNum(3.93)],
+	num: 20,
+	costs: [null, new ExpantaNum(5), new ExpantaNum(50), new ExpantaNum(10), new ExpantaNum(100), new ExpantaNum(250), new ExpantaNum(2.5e3), new ExpantaNum(200), new ExpantaNum(300), new ExpantaNum(2e3), new ExpantaNum(1.5e3), new ExpantaNum(1e8), new ExpantaNum(1e9), new ExpantaNum(1e50), new ExpantaNum(1e60), new ExpantaNum("1e100"), new ExpantaNum("1e120"), new ExpantaNum("1e315"), new ExpantaNum("3.17e317"), new ExpantaNum("1e500"), new ExpantaNum("1e650")],
+	incs: [null, new ExpantaNum(2), new ExpantaNum(5), new ExpantaNum(2), new ExpantaNum(5), new ExpantaNum(2.5), new ExpantaNum(2.5), new ExpantaNum(2), new ExpantaNum(1.5), new ExpantaNum(2), new ExpantaNum(1.5), new ExpantaNum(2.8), new ExpantaNum(2.8), new ExpantaNum(7.5), new ExpantaNum(3.93), new ExpantaNum(10), new ExpantaNum(4.7), new ExpantaNum(3.15), new ExpantaNum(8.6), new ExpantaNum(9), new ExpantaNum(9)],
+	dIncs: [null, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.1, 1.1]
 }
 
 const ASCEND_REQ = new ExpantaNum(35)
@@ -51,11 +52,11 @@ const TABS = {
 		display() { return true },
 		text: "Reach Floor 4 to unlock The Nursery.",
 		unl() { return player.totalFloor.gte(4) },
-	},
+	}
 }
 
 const NURSERY_UPGS = {
-	num: 9,
-	unls: [null, 4, 4, 4, 4, 5, 5, 5, 5, 6],
-	costs: [null, new ExpantaNum(2.5e3), new ExpantaNum(25e3), new ExpantaNum(15e4), new ExpantaNum(2e5), new ExpantaNum(1e6), new ExpantaNum(8e8), new ExpantaNum(1.5e9), new ExpantaNum(2e9), new ExpantaNum(1e30)],
+	num: 12,
+	unls: [null, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7],
+	costs: [null, new ExpantaNum(2.5e3), new ExpantaNum(25e3), new ExpantaNum(15e4), new ExpantaNum(2e5), new ExpantaNum(1e6), new ExpantaNum(8e8), new ExpantaNum(1.5e9), new ExpantaNum(2e9), new ExpantaNum(1e30), new ExpantaNum(1e42), new ExpantaNum(1e47), new ExpantaNum(1e60)],
 }

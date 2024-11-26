@@ -3,11 +3,13 @@ var player = defaultStart
 function getHPAdj() {
 	let adj = new ExpantaNum(1)
 	adj = adj.div(ExpantaNum.pow(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2)), getUpgs(8).add(getUpgs(10))))
+	if (hasNurseryUpg(12)) adj = adj.div(ExpantaNum.max(player.nursery.adults, 1));
 	return adj
 }
 
 function getFloorEff(f=player.floor) {
-	let eff = f.pow(1.2).div(2).add(1)
+	let adj = ExpantaNum.mul(getUpgs(17), ExpantaNum.sub(player.totalFloor, f).max(0)).div(100).plus(1);
+	let eff = f.pow(1.2).div(2).add(1).div(adj)
 	return eff
 }
 
@@ -23,11 +25,28 @@ function getTotalEnemyHP(noFloor=false, adj=new ExpantaNum(0)) {
 	return hp.ceil()
 }
 
+function getMaxRoomReachableInstantly(dmgPower) {
+	let b = BASE
+	let s = START
+	let ss = SCALE_START
+
+	let atkPower = dmgPower.div(getHPAdj());
+	if (ExpantaNum.lt(atkPower, s)) return player.room.add(1);
+	let x = ExpantaNum.div(atkPower, s).max(1).logBase(b);
+
+	if (ExpantaNum.gte(x, ss)) {
+		x = ExpantaNum.mul(x, ss).sqrt()
+	}
+
+	let room = ExpantaNum.div(x, getFloorEff(player.floor))
+	return room.add(1).floor()
+}
+
 function canContinue() { return player.enemies.lte(0) }
 
 function getDmg() {
 	let dmg = new ExpantaNum(1)
-	dmg = dmg.times(ExpantaNum.pow(ExpantaNum.add(3, getUpgs(11).plus(getUpgs(12))), getUpgs(1).add(getUpgs(3))))
+	dmg = dmg.times(ExpantaNum.pow(ExpantaNum.add(3, getUpgs(11).plus(getUpgs(12))), getUpgs(1).add(getUpgs(3)))).times(ExpantaNum.pow(player.room, getUpgs(18)).max(1))
 	dmg = dmg.times(getAdultEff())
 	return dmg.floor()
 }
@@ -42,6 +61,9 @@ function getGoldGain() {
 }
 
 function action(bulk=new ExpantaNum(1)) {
+	let totalEnemyHP = getTotalEnemyHP();
+	if (ExpantaNum.gt(player.enemyhp, totalEnemyHP)) player.enemyhp = totalEnemyHP;
+
 	let dmg = getDmg().times(bulk);
 	if (!canContinue()) {
 		player.enemyhp = player.enemyhp.sub(dmg).max(0)
@@ -51,27 +73,34 @@ function action(bulk=new ExpantaNum(1)) {
 		}
 	} 
 	if (canContinue()) {
-		player.room = player.room.add(1)
+		let maxRoom = getMaxRoomReachableInstantly(dmg)
+		player.room = ExpantaNum.min(maxRoom, player.room.add(getUpgs(15)).add(1)).max(player.room.add(1))
 		player.enemies = new ExpantaNum(1)
 		player.enemyhp = getTotalEnemyHP()
 	}
 }
 
 function getUpgs(x) {
-	return player.upgrades[x]?player.upgrades[x]:new ExpantaNum(0)
+	return player.upgrades[x]?new ExpantaNum(player.upgrades[x]):new ExpantaNum(0)
+}
+
+function getUpgLvlGainMult(x) {
+	let mult = new ExpantaNum(1);
+	if (x < 19) mult = mult.div(ExpantaNum.pow(0.897, getUpgs(19).plus(getUpgs(20))));
+	return mult
 }
 
 function getUpgCost(x) {
-	let cost = UPGS.costs[x].times(ExpantaNum.pow(UPGS.incs[x], ExpantaNum.pow(UPGS.incs[x], getUpgs(x)).sub(1)))
-	if (x<5) cost = cost.div(ExpantaNum.pow(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2)), getUpgs(5).add(getUpgs(6))))
+	let cost = UPGS.costs[x].times(ExpantaNum.pow(UPGS.incs[x], ExpantaNum.pow(UPGS.incs[x], getUpgs(x).div(getUpgLvlGainMult(x)).pow(UPGS.dIncs[x])).sub(1)))
+	if (x<5) cost = cost.div(ExpantaNum.pow(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2)), getUpgs(5).add(getUpgs(6))));
 	return cost.ceil()
 }
 
 function getUpgTarg(x) {
 	let gold = player.gold;
 	if (x<5) gold = gold.times(ExpantaNum.pow(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2)), getUpgs(5).add(getUpgs(6))));
-	let targ = gold.div(UPGS.costs[x]).max(1).logBase(UPGS.incs[x]).plus(1).logBase(UPGS.incs[x]).plus(1).floor()
-	return targ;
+	let targ = gold.div(UPGS.costs[x]).max(1).logBase(UPGS.incs[x]).plus(1).logBase(UPGS.incs[x]).root(UPGS.dIncs[x]).times(getUpgLvlGainMult(x));
+	return targ.plus(1).floor();
 }
 
 function buyUpg(x) {
@@ -79,7 +108,7 @@ function buyUpg(x) {
 	player.gold = player.gold.sub(getUpgCost(x))
 	if (player.upgrades[x]) player.upgrades[x] = player.upgrades[x].add(1)
 	else player.upgrades[x] = new ExpantaNum(1)
-	if (x==8 || x==10) player.enemyhp = player.enemyhp.div(ExpantaNum.add(10, getUpgs(11).plus(getUpgs(12)).times(2))).ceil()
+	if (x==8 || x==10 || x==11 || x==12 || x==17) player.enemyhp = getTotalEnemyHP()
 }
 
 function autobuyUpgs(start, end) {
@@ -129,6 +158,9 @@ function ascendReset() {
 	if (player.upgrades[8]) player.upgrades[8] = new ExpantaNum(0)
 	if (player.upgrades[11]) player.upgrades[11] = new ExpantaNum(0)
 	if (player.upgrades[14]) player.upgrades[14] = new ExpantaNum(0)
+	if (player.upgrades[17]) player.upgrades[17] = new ExpantaNum(0)
+	if (player.upgrades[18]) player.upgrades[18] = new ExpantaNum(0)
+	if (player.upgrades[19]) player.upgrades[19] = new ExpantaNum(0)
 }
 
 var upg7diff = new ExpantaNum(0)
@@ -145,6 +177,7 @@ function gameLoop(diff) {
 	for (i=1;i<=UPGS.num;i++) {
 		document.getElementById("upg"+i).className = "longbtn"+(player.gold.gte(getUpgCost(i))?"":" locked")
 		document.getElementById("upg"+i+"cost").textContent = f(getUpgCost(i))
+		document.getElementById("upg"+i+"lvl").textContent = "Lv " + f(getUpgs(i))
 	}
 	document.getElementById("nextFloor").className = "longbtn"+(canAscend()?"":" locked")
 	document.getElementById("nextFloor").textContent = "Next Floor"+(canAscend()?"":(" (Req: Room "+f(getAscendReq())+")"))
@@ -170,6 +203,8 @@ function gameLoop(diff) {
 	document.getElementById("floor4upgs").style.display = player.totalFloor.gte(4) ? "" : "none"
 	document.getElementById("floor5upgs").style.display = player.totalFloor.gte(5) ? "" : "none"
 	document.getElementById("floor6upgs").style.display = player.totalFloor.gte(6) ? "" : "none"
+	document.getElementById("floor7upgs").style.display = player.totalFloor.gte(7) ? "" : "none"
+	document.getElementById("floor8upgs").style.display = player.totalFloor.gte(8) ? "" : "none"
 	document.getElementById("upg1eff").textContent = f(new ExpantaNum(3).add(getUpgs(11).plus(getUpgs(12))))
 	document.getElementById("upg2eff").textContent = f(new ExpantaNum(2).add(getUpgs(11).plus(getUpgs(12))))
 	document.getElementById("upg5eff").textContent = f(new ExpantaNum(10).add(getUpgs(11).plus(getUpgs(12)).times(2)))
@@ -250,15 +285,19 @@ function gameLoop(diff) {
 	}
 	document.getElementById("adults").textContent = f(player.nursery.adults)
 	document.getElementById("adultDmg").textContent = f(getAdultEff())
+	document.getElementById("adultLvl").textContent = "Lv " + f(player.nursery.boughtAdults)
 	document.getElementById("babies").textContent = f(player.nursery.babies)
 	document.getElementById("babyGrowthRate").textContent = displayTime(getEachGrowth("baby").pow(-1))
 	document.getElementById("babyGrowthRateInc").textContent = f(getGrowthInc("baby"))
+	document.getElementById("babyLvl").textContent = "Lv " + f(player.nursery.babyBoosts)
 	document.getElementById("children").textContent = f(player.nursery.children)
 	document.getElementById("childGrowthRate").textContent = displayTime(getEachGrowth("child").pow(-1))
 	document.getElementById("childGrowthRateInc").textContent = f(getGrowthInc("child"))
+	document.getElementById("childLvl").textContent = "Lv " + f(player.nursery.childBoosts)
 	document.getElementById("teens").textContent = f(player.nursery.teens)
 	document.getElementById("teenGrowthRate").textContent = displayTime(getEachGrowth("teen").pow(-1))
 	document.getElementById("teenGrowthRateInc").textContent = f(getGrowthInc("teen"))
+	document.getElementById("teenLvl").textContent = "Lv " + f(player.nursery.teenBoosts)
 	document.getElementById("hireAdult").className = "longbtn2"+(player.gold.gte(getAdultCost()) ? "" : " locked")
 	document.getElementById("boostBaby").className = "longbtn2"+(player.nursery.adults.gte(getBabyCost()) ? "" : " locked")
 	document.getElementById("boostChild").className = "longbtn2"+(player.nursery.adults.gte(getChildCost()) ? "" : " locked")
@@ -286,7 +325,8 @@ function showTab(x) {
 function getAdultEffExp() {
 	let exp = new ExpantaNum(1.8)
 	if (hasNurseryUpg(2)) exp = exp.add(0.2)
-	if (player.totalFloor.gte(6)) exp = exp.add(ExpantaNum.div(getUpgs(14), 10));
+	if (hasNurseryUpg(10)) exp = exp.add(ExpantaNum.mul(player.nursery.boughtAdults, 0.065))
+	if (player.totalFloor.gte(6)) exp = exp.add(ExpantaNum.div(ExpantaNum.add(getUpgs(14), getUpgs(16)), 10));
 	return exp
 }
 
@@ -313,7 +353,7 @@ function getEachGrowth(type) {
 	if (player.nursery.childBoosts.gt(0) && type=="child") growth = growth.times(ExpantaNum.pow(inc, player.nursery.childBoosts))
 	if (player.nursery.teenBoosts.gt(0) && type=="teen") growth = growth.times(ExpantaNum.pow(inc, player.nursery.teenBoosts))
 	if (type=="baby" && hasNurseryUpg(7)) growth = growth.times(ExpantaNum.pow(1.5, player.nursery.boughtAdults));
-	if (type=="child" && hasNurseryUpg(3)) growth = growth.times(ExpantaNum.pow(1.1, player.totalFloor))
+	if (type=="child" && hasNurseryUpg(3)) growth = growth.times(ExpantaNum.pow(1.1, player.totalFloor));
 	return growth
 }
 
@@ -353,6 +393,7 @@ function hireAdult() {
 function getBabyCost() {
 	let cost = ExpantaNum.pow(3, player.nursery.babyBoosts.plus(1).pow(2)).times(100/3)
 	if (hasNurseryUpg(4)) cost = cost.div(25)
+	if (hasNurseryUpg(11)) cost = cost.div(getEachGrowth("baby").max(1))
 	return cost.floor()
 }
 
@@ -365,6 +406,7 @@ function boostBaby() {
 function getChildCost() {
 	let cost = ExpantaNum.pow(2.5, player.nursery.childBoosts.plus(1).pow(2)).times(100)
 	if (hasNurseryUpg(4)) cost = cost.div(25)
+	if (hasNurseryUpg(11)) cost = cost.div(getEachGrowth("child").max(1))
 	return cost.floor()
 }
 
@@ -377,6 +419,7 @@ function boostChild() {
 function getTeenCost() {
 	let cost = ExpantaNum.pow(2, player.nursery.teenBoosts.plus(1).pow(2)).times(500)
 	if (hasNurseryUpg(4)) cost = cost.div(25)
+	if (hasNurseryUpg(11)) cost = cost.div(getEachGrowth("teen").max(1))
 	return cost.floor()
 }
 
@@ -408,6 +451,16 @@ function load() {
 	else player = JSON.parse(atob(localStorage.getItem('rpgInc')))
 	checkExistence(player,defaultStart)
 	transformToDecimal(player,defaultStart)
+}
+
+function importSave() {
+	let sav = prompt("Paste json here:");
+
+	if (sav != null) {
+		player = JSON.parse(sav)
+		checkExistence(player, defaultStart);
+		transformToDecimal(player, defaultStart);
+	}
 }
 
 function checkExistence(object,orig) {
